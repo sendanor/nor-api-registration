@@ -4,7 +4,7 @@
 
 var $Q = require('q');
 var crypt = require('crypt3');
-var copy = require('nor-data').copy;
+var copy2 = require('nor-data').copy2;
 var debug = require('nor-debug');
 var is = require('nor-is');
 var NoPg = require('nor-nopg');
@@ -12,29 +12,22 @@ var HTTPError = require('nor-express').HTTPError;
 var ref = require('nor-ref');
 var helpers = require('nor-api-helpers');
 
-/** */
-function noob_view(req, res) {
-	return function(data) {
-		return data;
-	};
-}
-
 /** Returns nor-express based registration resource */
 var registration_builder = module.exports = function registration_builder(opts) {
-	opts = copy( opts || {} );
+	opts = opts || {};
 
-	opts.user_type = opts.user_type || "User";
-	opts.user_keys = opts.user_keys || ["email", "password"];
-	opts.path = opts.path || 'api/registration';
+	opts.user_type    = opts.user_type    || "User";
+	opts.user_keys    = opts.user_keys    || ["email", "password"];
+	opts.path         = opts.path         || 'api/registration';
 	opts.profile_path = opts.profile_path || 'api/profile';
-	opts.user_view = opts.user_view || noob_view;
 
 	debug.assert(opts.pg).is('string');
 	debug.assert(opts.user_type).is('string');
 	debug.assert(opts.user_keys).is('array');
 	debug.assert(opts.path).is('string');
 	debug.assert(opts.profile_path).is('string');
-	debug.assert(opts.user_view).is('function');
+	debug.assert(opts.user_view).is('object');
+	debug.assert(opts.user_view.element).is('function');
 
 	var routes = {};
 
@@ -65,7 +58,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 		}).commit().then(function(db) {
 			var item = db.fetch();
 			debug.assert(item).is('object');
-			return opts.user_view(req, res)(item);
+			return opts.user_view.element(req, res)(item);
 			//res.redirect(303, ref(req, 'api'));
 		}).then(function(user) {
 			debug.assert(user).is('object');
