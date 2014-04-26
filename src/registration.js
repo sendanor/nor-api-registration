@@ -111,6 +111,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 				}).reduce($Q.when, $Q(db));
 	
 			}).then(function create_user(db) {
+				debug.log('Going to create user: data=', data);
 				return db.create(opts.user_type)(data);
 			}).commit().then(function(db) {
 				var item = db.fetch();

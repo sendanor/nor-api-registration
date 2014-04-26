@@ -20,14 +20,14 @@
   },
   "homepage": "https://github.com/sendanor/nor-api-registration",
   "dependencies": {
-    "q":               ">= 1.0.1  < 1.1.0",
-    "crypt3":          ">= 0.1.4  < 0.2.0",
-    "nor-data":        ">= 0.0.6  < 0.1.0",
-    "nor-debug":       ">= 0.1.32 < 0.2.0",
-    "nor-is":          ">= 0.1.11 < 0.2.0",
-    "nor-nopg":        ">= 0.1.40 < 0.2.0",
-    "nor-express":     ">= 0.1.33 < 0.2.0",
-    "nor-ref":         ">= 0.1.0  < 0.2.0",
-    "nor-api-helpers": ">= 0.1.0  < 0.2.0"
+    "q"               : ">= 1.0.1  < 1.1.0",
+    "crypt3"          : ">= 0.1.4  < 0.2.0",
+    "nor-data"        : ">= 0.0.6  < 0.1.0",
+    "nor-debug"       : ">= 0.1.32 < 0.2.0",
+    "nor-is"          : ">= 0.1.11 < 0.2.0",
+    "nor-nopg"        : ">= 0.1.40 < 0.2.0",
+    "nor-express"     : ">= 0.1.33 < 0.2.0",
+    "nor-ref"         : ">= 0.1.0  < 0.2.0",
+    "nor-api-helpers" : ">= 0.1.0  < 0.2.0"
   }
 }
