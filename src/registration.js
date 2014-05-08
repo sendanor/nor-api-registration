@@ -76,7 +76,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 					return $Q.when( is.func(defaults[key]) ? defaults[key](data) : defaults[key] ).then(function set_the_result(value) {
 						data[key] = value;
 					});
-				}).reduce($Q.when, $Q).then(function returns_data() {
+				}).reduce($Q.when, $Q()).then(function returns_data() {
 					return data;
 				});
 			});
