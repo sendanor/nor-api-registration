@@ -28,6 +28,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 	opts.user_type    = opts.user_type    || "User";
 	opts.user_keys    = opts.user_keys    || ["email", "password"];
 	opts.unique_keys  = opts.unique_keys  || ["email"];
+	opts.lowercase_keys  = opts.lowercase_keys  || opts.unique_keys || ["email"];
 	opts.path         = opts.path         || 'api/registration';
 	opts.profile_path = opts.profile_path || 'api/profile';
 	opts.defaults     = opts.defaults     || {};
@@ -39,6 +40,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 	debug.assert(opts.profile_path).is('string');
 	debug.assert(opts.user_view).is('object');
 	debug.assert(opts.user_view.element).is('function');
+	debug.assert(opts.lowercase_keys).is('array');
 
 	var routes = {};
 
@@ -52,6 +54,13 @@ var registration_builder = module.exports = function registration_builder(opts) 
 		return $Q.fcall(function parse_params() {
 			return helpers.parse_body_params(req, opts.user_keys);
 		}).then(function prepare_defaults(data) {
+
+			// Lowercase keys
+			opts.lowercase_keys.forEach(function(key) {
+				if(is.object(data) && is.string(data[key])) {
+					data[key] = data[key].toLowerCase();
+				}
+			});
 
 			// First lets make sure `opts.defaults` is not a function or promise.
 			return $Q.fcall(function handle_functions_and_promises() {
