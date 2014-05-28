@@ -2,7 +2,7 @@
 
 "use strict";
 
-var $Q = require('q');
+var Q = require('q');
 var crypt = require('crypt3');
 var copy2 = require('nor-data').copy2;
 var debug = require('nor-debug');
@@ -21,6 +21,8 @@ var helpers = require('nor-api-helpers');
  * @param opts.profile_path {string} The path to profile resource. Defaults to `"/api/profile"`.
  * @param opts.defaults {object} Default values for new user accounts. If the value or one of the properties is a function, it will be called instead. The data object is passed as the first argument and the return value will be used as new value.
  * @param opts.user_view {NoPg Resource} 
+ * @param opts.on_registration {function} This is a function that will be called after successful registration. It the function returns anything else than `undefined`, it will be supplied as the result for request. It can return promises, too.
+ * @param opts.before_registration {function} This is a function that will be called before successful registration (before commit). You may fail this promise if registration should not be allowed. It can return promises, too.
  */
 var registration_builder = module.exports = function registration_builder(opts) {
 	opts = opts || {};
@@ -41,6 +43,8 @@ var registration_builder = module.exports = function registration_builder(opts) 
 	debug.assert(opts.user_view).is('object');
 	debug.assert(opts.user_view.element).is('function');
 	debug.assert(opts.lowercase_keys).is('array');
+	debug.assert(opts.on_registration).ignore(undefined).is('function');
+	debug.assert(opts.before_registration).ignore(undefined).is('function');
 
 	var routes = {};
 
@@ -51,7 +55,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 
 	/** Registration for new user to the system */
 	routes.POST = function(req, res) {
-		return $Q.fcall(function parse_params() {
+		return Q.fcall(function parse_params() {
 			return helpers.parse_body_params(req, opts.user_keys);
 		}).then(function prepare_defaults(data) {
 
@@ -63,7 +67,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 			});
 
 			// First lets make sure `opts.defaults` is not a function or promise.
-			return $Q.fcall(function handle_functions_and_promises() {
+			return Q.fcall(function handle_functions_and_promises() {
 
 				// If `opts.defaults` is a function, use it to build the data 
 				if(is.func(opts.defaults)) {
@@ -82,10 +86,10 @@ var registration_builder = module.exports = function registration_builder(opts) 
 
 				// Asynchronously set default values to `data`
 				}).map(function set_values_on_data(key) {
-					return $Q.when( is.func(defaults[key]) ? defaults[key](data) : defaults[key] ).then(function set_the_result(value) {
+					return Q.when( is.func(defaults[key]) ? defaults[key](data) : defaults[key] ).then(function set_the_result(value) {
 						data[key] = value;
 					});
-				}).reduce($Q.when, $Q()).then(function returns_data() {
+				}).reduce(Q.when, Q()).then(function returns_data() {
 					return data;
 				});
 			});
@@ -97,6 +101,8 @@ var registration_builder = module.exports = function registration_builder(opts) 
 			data.password = crypt(data.password, crypt.createSalt('md5'));
 	
 			// FIXME: Validate email address format
+
+			var item, _db;
 
 			return NoPg.start(opts.pg).then(function check_uniqueness(db) {
 
@@ -117,20 +123,38 @@ var registration_builder = module.exports = function registration_builder(opts) 
 							return db3;
 						});
 					};
-				}).reduce($Q.when, $Q(db));
+				}).reduce(Q.when, Q(db));
 	
 			}).then(function create_user(db) {
 				debug.log('Going to create user: data=', data);
 				return db.create(opts.user_type)(data);
-			}).commit().then(function(db) {
-				var item = db.fetch();
+			}).then(function(db) {
+				_db = db;
+				item = db.fetch();
 				debug.assert(item).is('object');
 				return opts.user_view.element(req, res)(item);
-				//res.redirect(303, ref(req, 'api'));
 			}).then(function(user) {
 				debug.assert(user).is('object');
 				delete user.password;
 				user.$ref = ref(req, opts.profile_path);
+				return user;
+			}).then(function(user) {
+				if(is.func(opts.before_registration)) {
+					return Q.when(opts.before_registration.call(user, req, res)).then(function(body) {
+						return (body === undefined) ? user : body;
+					});
+				}
+				return user;
+			}).then(function(user) {
+				return _db.commit().then(function() {
+					return user;
+				});
+			}).then(function(user) {
+				if(is.func(opts.on_registration)) {
+					return Q.when(opts.on_registration.call(user, req, res)).then(function(body) {
+						return (body === undefined) ? user : body;
+					});
+				}
 				return user;
 			});
 		});
