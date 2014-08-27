@@ -99,7 +99,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 			// Password is crypted
 			debug.assert(data.password).is('string');
 			data.password = crypt(data.password, crypt.createSalt('md5'));
-	
+
 			// FIXME: Validate email address format
 
 			var item, _db;
@@ -110,7 +110,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 				if(!(is.array(opts.unique_keys) && opts.unique_keys.length >= 1)) {
 					return;
 				}
-	
+
 				return opts.unique_keys.map(function map_unique_key(key) {
 					return function check_unique_key(db2) {
 						var where = {};
@@ -118,13 +118,13 @@ var registration_builder = module.exports = function registration_builder(opts) 
 						return db2.searchSingle(opts.user_type)(where).then(function(db3) {
 							var user = db3.fetch();
 							if(is.obj(user) && is.uuid(user.$id)) {
-								throw new HTTPError(409, "reserved " + key);
+								throw new HTTPError(409, "reserved-" + key);
 							}
 							return db3;
 						});
 					};
 				}).reduce(Q.when, Q(db));
-	
+
 			}).then(function create_user(db) {
 				debug.log('Going to create user: data=', data);
 				return db.create(opts.user_type)(data);
