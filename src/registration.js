@@ -43,6 +43,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 	debug.assert(opts.user_view).is('object');
 	debug.assert(opts.user_view.element).is('function');
 	debug.assert(opts.lowercase_keys).is('array');
+	debug.assert(opts.on_validation).ignore(undefined).is('function');
 	debug.assert(opts.on_registration).ignore(undefined).is('function');
 	debug.assert(opts.before_registration).ignore(undefined).is('function');
 
@@ -99,6 +100,16 @@ var registration_builder = module.exports = function registration_builder(opts) 
 			// Password is crypted
 			debug.assert(data.password).is('string');
 			data.password = crypt(data.password, crypt.createSalt('md5'));
+
+			// Custom validations
+			if( is.func(opts.on_validation) ) {
+				return Q.when(opts.on_validation(data)).then(function() {
+					return data;
+				});
+			}
+			return data;
+
+		}).then(function(data) {
 
 			// FIXME: Validate email address format
 
