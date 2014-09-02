@@ -2,9 +2,9 @@
 
 "use strict";
 
-var Q = require('q');
+var _Q = require('q');
 var crypt = require('crypt3');
-var copy2 = require('nor-data').copy2;
+//var copy2 = require('nor-data').copy2;
 var debug = require('nor-debug');
 var is = require('nor-is');
 var NoPg = require('nor-nopg');
@@ -24,7 +24,7 @@ var helpers = require('nor-api-helpers');
  * @param opts.on_registration {function} This is a function that will be called after successful registration. It the function returns anything else than `undefined`, it will be supplied as the result for request. It can return promises, too.
  * @param opts.before_registration {function} This is a function that will be called before successful registration (before commit). You may fail this promise if registration should not be allowed. It can return promises, too.
  */
-var registration_builder = module.exports = function registration_builder(opts) {
+module.exports = function registration_builder(opts) {
 	opts = opts || {};
 
 	opts.user_type    = opts.user_type    || "User";
@@ -50,13 +50,13 @@ var registration_builder = module.exports = function registration_builder(opts) 
 	var routes = {};
 
 	/** Returns nothing */
-	routes.GET = function(req, res) {
+	routes.GET = function(req/*, res*/) {
 		return { '$ref': ref(req, opts.path) };
 	};
 
 	/** Registration for new user to the system */
 	routes.POST = function(req, res) {
-		return Q.fcall(function parse_params() {
+		return _Q.fcall(function parse_params() {
 			return helpers.parse_body_params(req, opts.user_keys);
 		}).then(function prepare_defaults(data) {
 
@@ -68,7 +68,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 			});
 
 			// First lets make sure `opts.defaults` is not a function or promise.
-			return Q.fcall(function handle_functions_and_promises() {
+			return _Q.fcall(function handle_functions_and_promises() {
 
 				// If `opts.defaults` is a function, use it to build the data 
 				if(is.func(opts.defaults)) {
@@ -87,10 +87,10 @@ var registration_builder = module.exports = function registration_builder(opts) 
 
 				// Asynchronously set default values to `data`
 				}).map(function set_values_on_data(key) {
-					return Q.when( is.func(defaults[key]) ? defaults[key](data) : defaults[key] ).then(function set_the_result(value) {
+					return _Q.when( is.func(defaults[key]) ? defaults[key](data) : defaults[key] ).then(function set_the_result(value) {
 						data[key] = value;
 					});
-				}).reduce(Q.when, Q()).then(function returns_data() {
+				}).reduce(_Q.when, _Q()).then(function returns_data() {
 					return data;
 				});
 			});
@@ -103,7 +103,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 
 			// Custom validations
 			if( is.func(opts.on_validation) ) {
-				return Q.when(opts.on_validation(data)).then(function() {
+				return _Q.when(opts.on_validation(data)).then(function() {
 					return data;
 				});
 			}
@@ -134,7 +134,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 							return db3;
 						});
 					};
-				}).reduce(Q.when, Q(db));
+				}).reduce(_Q.when, _Q(db));
 
 			}).then(function create_user(db) {
 				debug.log('Going to create user: data=', data);
@@ -151,7 +151,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 				return user;
 			}).then(function(user) {
 				if(is.func(opts.before_registration)) {
-					return Q.when(opts.before_registration.call(user, req, res)).then(function(body) {
+					return _Q.when(opts.before_registration.call(user, req, res)).then(function(body) {
 						return (body === undefined) ? user : body;
 					});
 				}
@@ -162,7 +162,7 @@ var registration_builder = module.exports = function registration_builder(opts) 
 				});
 			}).then(function(user) {
 				if(is.func(opts.on_registration)) {
-					return Q.when(opts.on_registration.call(user, req, res)).then(function(body) {
+					return _Q.when(opts.on_registration.call(user, req, res)).then(function(body) {
 						return (body === undefined) ? user : body;
 					});
 				}
