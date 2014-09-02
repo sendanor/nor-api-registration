@@ -1,10 +1,11 @@
 {
   "name": "nor-api-registration",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Registration API module",
   "main": "src/registration.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "jshint": "jshint src/"
   },
   "repository": {
     "type": "git",
@@ -29,5 +30,8 @@
     "nor-express"     : ">= 0.1.44 < 0.2.0",
     "nor-ref"         : ">= 0.1.0  < 0.2.0",
     "nor-api-helpers" : ">= 0.1.4  < 0.2.0"
+  },
+  "devDependencies":{
+    "jshint"       : "*"
   }
 }
