@@ -1,6 +1,6 @@
 {
   "name": "nor-api-registration",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "Registration API module",
   "main": "src/registration.js",
   "scripts": {
@@ -23,13 +23,13 @@
   "dependencies": {
     "q"               : ">= 1.0.1  < 1.1.0",
     "crypt3"          : ">= 0.1.5  < 0.2.0",
-    "nor-data"        : ">= 0.0.13  < 0.1.0",
-    "nor-debug"       : ">= 0.1.44 < 0.2.0",
+    "nor-data"        : ">= 0.0.14  < 0.1.0",
+    "nor-debug"       : ">= 0.1.45 < 0.2.0",
     "nor-is"          : ">= 0.1.15 < 0.2.0",
-    "nor-nopg"        : ">= 0.1.88 < 0.2.0",
+    "nor-nopg"        : ">= 0.1.89 < 0.2.0",
     "nor-express"     : ">= 0.1.48 < 0.2.0",
     "nor-ref"         : ">= 0.1.2  < 0.2.0",
-    "nor-api-helpers" : ">= 0.1.6  < 0.2.0"
+    "nor-api-helpers" : ">= 0.1.7  < 0.2.0"
   },
   "devDependencies":{
     "jshint"       : "*"
