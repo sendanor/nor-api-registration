@@ -8,6 +8,7 @@ var crypt = require('crypt3');
 var debug = require('nor-debug');
 var is = require('nor-is');
 var NoPg = require('nor-nopg');
+var ARRAY = require('nor-array');
 var HTTPError = require('nor-express').HTTPError;
 var ref = require('nor-ref');
 var helpers = require('nor-api-helpers');
@@ -61,7 +62,7 @@ module.exports = function registration_builder(opts) {
 		}).then(function prepare_defaults(data) {
 
 			// Lowercase keys
-			opts.lowercase_keys.forEach(function(key) {
+			ARRAY(opts.lowercase_keys).forEach(function(key) {
 				if(is.object(data) && is.string(data[key])) {
 					data[key] = data[key].toLowerCase();
 				}
@@ -82,7 +83,7 @@ module.exports = function registration_builder(opts) {
 			}).then(function handle_properties(defaults) {
 
 				// Filter only properties that are missing from `data`
-				return Object.keys(defaults).filter(function filter_by_undefined_values(key) {
+				return ARRAY(Object.keys(defaults)).filter(function filter_by_undefined_values(key) {
 					return key && (data[key] === undefined);
 
 				// Asynchronously set default values to `data`
@@ -122,7 +123,7 @@ module.exports = function registration_builder(opts) {
 					return;
 				}
 
-				return opts.unique_keys.map(function map_unique_key(key) {
+				return ARRAY(opts.unique_keys).map(function map_unique_key(key) {
 					return function check_unique_key(db2) {
 						var where = {};
 						where[key] = data[key];
