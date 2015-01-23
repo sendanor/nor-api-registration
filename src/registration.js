@@ -24,6 +24,7 @@ var helpers = require('nor-api-helpers');
  * @param opts.user_view {NoPg Resource} 
  * @param opts.on_registration {function} This is a function that will be called after successful registration. It the function returns anything else than `undefined`, it will be supplied as the result for request. It can return promises, too.
  * @param opts.before_registration {function} This is a function that will be called before successful registration (before commit). You may fail this promise if registration should not be allowed. It can return promises, too.
+ * @param opts.before_creation {function} This is a function that will be called before registration (before create). You may fail this promise if registration should not be allowed. It can return promises, too.
  */
 module.exports = function registration_builder(opts) {
 	opts = opts || {};
@@ -47,6 +48,7 @@ module.exports = function registration_builder(opts) {
 	debug.assert(opts.on_validation).ignore(undefined).is('function');
 	debug.assert(opts.on_registration).ignore(undefined).is('function');
 	debug.assert(opts.before_registration).ignore(undefined).is('function');
+	debug.assert(opts.before_creation).ignore(undefined).is('function');
 
 	var routes = {};
 
@@ -137,6 +139,16 @@ module.exports = function registration_builder(opts) {
 					};
 				}).reduce(_Q.when, _Q(db));
 
+			}).then(function(db) {
+				if(is.func(opts.before_creation)) {
+					return _Q.when(opts.before_creation.call(data, req, res)).then(function(body) {
+						if(is.obj(body)) {
+							data = body;
+						}
+						return db;
+					});
+				}
+				return db;
 			}).then(function create_user(db) {
 				debug.log('Going to create user: data=', data);
 				return db.create(opts.user_type)(data);

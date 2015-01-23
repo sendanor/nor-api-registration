@@ -1,6 +1,6 @@
 {
   "name": "nor-api-registration",
-  "version": "0.1.50",
+  "version": "0.1.51",
   "description": "Registration API module",
   "main": "src/registration.js",
   "scripts": {
