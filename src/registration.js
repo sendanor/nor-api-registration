@@ -150,7 +150,7 @@ module.exports = function registration_builder(opts) {
 				}
 				return db;
 			}).then(function create_user(db) {
-				debug.log('Going to create user: data=', data);
+				//debug.log('Going to create user: data=', data);
 				return db.create(opts.user_type)(data);
 			}).then(function(db) {
 				_db = db;
